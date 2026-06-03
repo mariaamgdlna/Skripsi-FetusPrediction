@@ -1,8 +1,5 @@
-import numpy as np
-
 from scipy.signal import find_peaks
 from scipy.interpolate import CubicSpline
-
 
 class EMDDenoiser:
 
