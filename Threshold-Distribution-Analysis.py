@@ -1,6 +1,72 @@
 import numpy as np
 import pandas as pd
 
+def analyze_peak_threshold(
+        signal,
+        radius=10):
+    """
+    Peak Detection
+        ↓
+    Peak Statistics
+        ↓
+    Adaptive Threshold
+
+    Adaptive threshold =
+    mean(all peaks > 0)
+    """
+
+    peak_indices, _ = find_peaks(
+        signal,
+        distance=radius,
+        height=0
+    )
+
+    if len(peak_indices) == 0:
+        return None
+
+    peak_values = signal[
+        peak_indices
+    ]
+
+    peaks_above_zero = peak_values[
+        peak_values > 0
+    ]
+
+    if len(peaks_above_zero) == 0:
+        return None
+
+    adaptive_threshold = np.mean(
+        peaks_above_zero
+    )
+
+    threshold_summary = {
+
+        "total_peaks":
+            len(peak_values),
+
+        "positive_peaks":
+            len(peaks_above_zero),
+
+        "adaptive_threshold":
+            adaptive_threshold,
+
+        "min_peak":
+            np.min(peaks_above_zero),
+
+        "max_peak":
+            np.max(peaks_above_zero),
+
+        "mean_peak":
+            np.mean(peaks_above_zero),
+
+        "median_peak":
+            np.median(peaks_above_zero),
+
+        "std_peak":
+            np.std(peaks_above_zero)
+    }
+
+    return threshold_summary
 
 def histogram_interval_analysis(
         feature_values,
