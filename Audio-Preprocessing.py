@@ -1,7 +1,6 @@
 import warnings
 import numpy as np
 import matplotlib.pyplot as plt
-import librosa
 import torchaudio
 import torch
 
@@ -14,7 +13,7 @@ def butter_bandpass(
     lowcut,
     highcut,
     fs,
-    order=2
+    order=5
 ):
     nyq = 0.5 * fs
 
@@ -35,7 +34,7 @@ def butter_bandpass_filter(
     lowcut,
     highcut,
     fs,
-    order=2
+    order=5
 ):
     b, a = butter_bandpass(
         lowcut,
@@ -163,12 +162,12 @@ def save_audio(
     )
 
 
-def plot_comparison(
+def plot_time_domain(
     original_audio,
     filtered_audio,
     original_sr,
     filtered_sr,
-    duration=3
+    duration=5
 ):
     n1 = min(
         int(duration * original_sr),
@@ -193,6 +192,7 @@ def plot_comparison(
         t1,
         original_audio[:n1]
     )
+
     ax[0].set_title(
         "Original Signal"
     )
@@ -204,6 +204,8 @@ def plot_comparison(
     ax[0].set_ylabel(
         "Amplitude"
     )
+
+    ax[0].grid(True)
 
     ax[1].plot(
         t2,
@@ -222,17 +224,21 @@ def plot_comparison(
         "Amplitude"
     )
 
+    ax[1].grid(True)
+
     plt.tight_layout()
     plt.show()
 
 
-def frequency_analysis(
+def plot_frequency_domain(
     audio,
-    sr
+    sr,
+    max_freq=1000
 ):
     n = len(audio)
 
     fft = np.fft.fft(audio)
+
     freq = np.fft.fftfreq(
         n,
         1 / sr
@@ -263,9 +269,165 @@ def frequency_analysis(
 
     plt.xlim(
         0,
-        1000
+        max_freq
     )
 
     plt.grid(True)
 
+    plt.show()
+
+
+def plot_comparison(
+    original_audio,
+    filtered_audio,
+    original_sr,
+    filtered_sr,
+    lowcut=0.5,
+    highcut=500
+):
+    plt.figure(
+        figsize=(15, 10)
+    )
+
+    plt.subplot(
+        3,
+        1,
+        1
+    )
+
+    plt.plot(
+        np.arange(len(original_audio)) / original_sr,
+        original_audio,
+        label="Original",
+        alpha=0.8
+    )
+
+    plt.plot(
+        np.arange(len(filtered_audio)) / filtered_sr,
+        filtered_audio,
+        label="Filtered",
+        alpha=0.8
+    )
+
+    plt.title(
+        "Time Domain Comparison"
+    )
+
+    plt.xlabel(
+        "Time (s)"
+    )
+
+    plt.ylabel(
+        "Amplitude"
+    )
+
+    plt.legend()
+
+    plt.subplot(
+        3,
+        1,
+        2
+    )
+
+    n1 = min(
+        5 * original_sr,
+        len(original_audio)
+    )
+
+    n2 = min(
+        5 * filtered_sr,
+        len(filtered_audio)
+    )
+
+    plt.plot(
+        np.arange(n1) / original_sr,
+        original_audio[:n1],
+        label="Original"
+    )
+
+    plt.plot(
+        np.arange(n2) / filtered_sr,
+        filtered_audio[:n2],
+        label="Filtered"
+    )
+
+    plt.title(
+        "Detail View (First 5 Seconds)"
+    )
+
+    plt.xlabel(
+        "Time (s)"
+    )
+
+    plt.ylabel(
+        "Amplitude"
+    )
+
+    plt.legend()
+
+    plt.subplot(
+        3,
+        1,
+        3
+    )
+
+    fft_orig = np.fft.fft(
+        original_audio
+    )
+
+    freq_orig = np.fft.fftfreq(
+        len(original_audio),
+        1 / original_sr
+    )
+
+    fft_filt = np.fft.fft(
+        filtered_audio
+    )
+
+    freq_filt = np.fft.fftfreq(
+        len(filtered_audio),
+        1 / filtered_sr
+    )
+
+    mask_orig = freq_orig >= 0
+    mask_filt = freq_filt >= 0
+
+    plt.plot(
+        freq_orig[mask_orig],
+        np.abs(fft_orig[mask_orig]),
+        label="Original"
+    )
+
+    plt.plot(
+        freq_filt[mask_filt],
+        np.abs(fft_filt[mask_filt]),
+        label="Filtered"
+    )
+
+    plt.axvspan(
+        lowcut,
+        highcut,
+        alpha=0.2
+    )
+
+    plt.title(
+        "Frequency Domain Comparison"
+    )
+
+    plt.xlabel(
+        "Frequency (Hz)"
+    )
+
+    plt.ylabel(
+        "Magnitude"
+    )
+
+    plt.xlim(
+        0,
+        1000
+    )
+
+    plt.legend()
+
+    plt.tight_layout()
     plt.show()
